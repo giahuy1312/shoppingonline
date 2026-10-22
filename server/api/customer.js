@@ -51,6 +51,7 @@ const CustomerDAO = require('../models/CustomerDAO');
 // daos
 const CategoryDAO = require('../models/CategoryDAO');
 const ProductDAO = require('../models/ProductDAO');
+const OrderDAO = require('../models/OrderDAO');
 
 // customer
 router.post('/signup', async function (req, res) {
@@ -159,6 +160,33 @@ router.put('/customers/:id', JwtUtil.checkToken, async function (req, res) {
 
   res.json(result);
 
+});
+// mycart
+router.post('/checkout', JwtUtil.checkToken, async function (req, res) {
+
+  const now = new Date().getTime(); // milliseconds
+  const total = req.body.total;
+  const items = req.body.items;
+  const customer = req.body.customer;
+
+  const order = {
+    cdate: now,
+    total: total,
+    status: 'PENDING',
+    customer: customer,
+    items: items
+  };
+
+  const result = await OrderDAO.insert(order);
+
+  res.json(result);
+});
+
+// myorders
+router.get('/orders/customer/:cid', JwtUtil.checkToken, async function (req, res) {
+  const _cid = req.params.cid;
+  const orders = await OrderDAO.selectByCustID(_cid);
+  res.json(orders);
 });
 
 module.exports = router;
